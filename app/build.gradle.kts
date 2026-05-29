@@ -20,6 +20,8 @@ repositories {
 }
 
 dependencies {
+    implementation("com.varabyte.kotter:kotter:1.3.0")
+    testImplementation("com.varabyte.kotterx:kotter-test-support:1.3.0")
     // This dependency is used by the application.
     implementation(libs.guava)
 }
@@ -42,6 +44,10 @@ java {
 }
 
 application {
+    applicationDefaultJvmArgs = listOf(
+        "-XX:+IgnoreUnrecognizedVMOptions",
+        "--enable-native-access=ALL-UNNAMED",
+    )
     // Define the main class for the application.
     mainClass = "dev.noduh.snake.AppKt"
 }

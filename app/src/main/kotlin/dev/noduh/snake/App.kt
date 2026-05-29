@@ -12,3 +12,20 @@ fun main() {
         }.run()
     }
 }
+
+enum class Direction {
+    NORTH, EAST, SOUTH, WEST
+}
+
+// work on encapsulation
+
+class Snake {
+    var length: Int = 0
+    var direction: Direction = Direction.EAST
+    var headLocation: Pair<Int, Int> = Pair(0, 0)
+    val tail: MutableList<Pair<Int, Int>> = mutableListOf<Pair<Int, Int>>()
+}
+
+class GameBoard(val width: Int, val height: Int) {
+    val board: Array<Array<Int>> // figure out how to initialize this
+}

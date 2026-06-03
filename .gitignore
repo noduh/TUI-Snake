@@ -3,6 +3,7 @@
 *.time
 *.pdf
 .vscode/
+*.drawio
 
 # Ignore Gradle project-specific cache directory
 .gradle

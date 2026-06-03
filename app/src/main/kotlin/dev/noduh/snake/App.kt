@@ -17,15 +17,22 @@ enum class Direction {
     NORTH, EAST, SOUTH, WEST
 }
 
-// work on encapsulation
-
 class Snake {
     var length: Int = 0
+        private set
     var direction: Direction = Direction.EAST
+        private set
     var headLocation: Pair<Int, Int> = Pair(0, 0)
-    val tail: MutableList<Pair<Int, Int>> = mutableListOf<Pair<Int, Int>>()
+        private set
+    private val tail: MutableList<Pair<Int, Int>> = mutableListOf<Pair<Int, Int>>()
+    private var growing: Int = 0 // zero if not growing, amount left to grow otherwise
+
+    fun grow(lengthToGrow: Int) {
+        this.growing = lengthToGrow
+    }
 }
 
-class GameBoard(val width: Int, val height: Int) {
-    val board: Array<Array<Int>> // figure out how to initialize this
+class GameBoard(width: Int, height: Int) {
+    private val board: Array<Array<Int>> = Array(width) { Array(height) { 0 } }
+
 }

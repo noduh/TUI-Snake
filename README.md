@@ -34,6 +34,8 @@ I figured it's perfect for learning a new language.
 Here are some websites that were useful to me in the development of this project:
 
 - [Kotlin Docs](https://kotlinlang.org/docs/)
+- [kotter README](https://github.com/varabyte/kotter/blob/main/README.md)
+- [Google Gemini](https://gemini.google.com/)
 
 # Future Work
 

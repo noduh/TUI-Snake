@@ -105,6 +105,8 @@ class Snake {
         } else {
             tail.removeLastOrNull()
         }
+
+        length++ // I almost forgot to add this part
     }
 
     fun eat(growAmount: Int) {
@@ -115,11 +117,12 @@ class Snake {
 }
 
 class GameMap(width: Int, height: Int) {
+    val growAmount = 1
     private val board: Array<Array<BoardPiece>> = Array(width) { Array(height) { BoardPiece.EMPTY } }
     val dimensions: Pair<Int, Int> = Pair(width, height)
     private val snake: Snake = Snake()
 
-    fun spawnApple() {
+    private fun spawnApple() {
         val maxX: Int = dimensions.first - 1
         val maxY: Int = dimensions.second - 1
         var tryLocation: Pair<Int, Int> = Pair(-1, -1)
@@ -130,6 +133,64 @@ class GameMap(width: Int, height: Int) {
         } while (pieceAtLocation.isSnake)
 
         board[tryLocation.first][tryLocation.second] = BoardPiece.APPLE
+    }
+
+    private fun didHeadCrash(): Boolean { // if true, the game should end
+        val headLocationX: Int = snake.headLocation.first
+        val headLocationY: Int = snake.headLocation.second
+
+        if (headLocationX >= dimensions.first || headLocationX < 0 || headLocationY >= dimensions.second || headLocationY < 0) { // out of bounds check
+            return true
+        }
+
+        val pieceToCheck: BoardPiece = board[headLocationX][headLocationY]
+
+        return pieceToCheck.isSnake // does it hit itself
+    }
+
+    private fun didHeadEat(): Boolean =
+        board[snake.headLocation.first][snake.headLocation.second].isApple // is the head where an apple was
+
+    fun getScore(): Int = snake.length // it will be minimum of 2 but that's what I want
+
+    fun updateBoard(): Boolean { // if it's false, game is over
+        val snakeTail = snake.getTail()
+
+        snake.move()
+
+        // checking the collisions
+        if (didHeadCrash()) {
+            return false
+        }
+        if (didHeadEat()) {
+            snake.eat(growAmount)
+            spawnApple()
+        }
+
+        // clearing board (except the apple)
+        for (column in 0..<dimensions.first) {
+            for (row in 0..<dimensions.second) {
+                if (!board[column][row].isApple) {
+                    board[column][row] = BoardPiece.EMPTY
+                }
+            }
+        }
+
+        // redraw the snake
+        board[snake.headLocation.first][snake.headLocation.second] = BoardPiece.HEAD
+        for (piece in snakeTail) {
+            board[piece.first][piece.second] = BoardPiece.TAIL
+        }
+        board[snakeTail[snakeTail.lastIndex].first][snakeTail[snakeTail.lastIndex].second] = BoardPiece.END
+
+        // hopefully everything worked
+        return true
+    }
+
+    fun updateBoard(moveDirection: Direction): Boolean {
+        snake.turn(moveDirection)
+
+        return updateBoard()
     }
 }
 

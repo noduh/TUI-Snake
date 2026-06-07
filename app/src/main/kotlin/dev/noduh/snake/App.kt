@@ -2,6 +2,7 @@ package dev.noduh.snake
 
 import com.varabyte.kotter.foundation.input.Keys
 import com.varabyte.kotter.foundation.input.onKeyPressed
+import com.varabyte.kotter.foundation.input.runUntilKeyPressed
 import com.varabyte.kotter.foundation.session
 import com.varabyte.kotter.foundation.text.text
 import com.varabyte.kotter.foundation.text.textLine
@@ -9,19 +10,18 @@ import com.varabyte.kotter.foundation.timer.addTimer
 import kotlin.time.Duration.Companion.milliseconds
 
 fun main() {
-    val updateDelay = 300.milliseconds
+    val updateDelay = 100.milliseconds
     session {
-        val terminalWidth = terminalSize.width
-        val terminalHeight = terminalSize.height
-        val gameMap = GameMap(terminalWidth, terminalHeight)
+        val gameMap = GameMap(terminalSize.width, terminalSize.height - 1)
         var queuedDirection: Direction = Direction.EAST
 
         section {
+            textLine("Press [Esc] to end the game. (If you aren't moving you're prolly dead)")
             for (symbol in gameMap.getDrawableBoard()) { // draw the whole board
                 text(symbol)
             }
-        }.run {
-            addTimer(updateDelay, repeat = true) { // main game loop
+        }.runUntilKeyPressed(Keys.Escape) {
+            addTimer(updateDelay, repeat = false) { // main game loop
                 repeat = gameMap.updateBoard(queuedDirection) // ends when the game ends
                 rerender()
             }
@@ -91,15 +91,15 @@ enum class BoardPiece { // defines what needs to be drawn on the board
         get() = this == EMPTY
 }
 
-class Snake {
+class Snake(startHeadLocation: Pair<Int, Int>) {
     var length: Int = 2 // this includes head and end
         private set
     var direction: Direction = Direction.EAST
         private set
-    var headLocation: Pair<Int, Int> = Pair(0, 0)
+    var headLocation: Pair<Int, Int> = startHeadLocation
         private set
     private val tail: ArrayDeque<Triple<Int, Int, Direction>> = ArrayDeque<Triple<Int, Int, Direction>>()
-    private var growing: Int = 0 // zero if not growing, amount left to grow otherwise
+    private var growing: Int = 1 // zero if not growing, amount left to grow otherwise
 
     fun grow(lengthToGrow: Int) {
         this.growing = lengthToGrow
@@ -124,11 +124,11 @@ class Snake {
 
         if (growing != 0) {
             growing--
+            length++ // I almost forgot to add this part
         } else {
             tail.removeLastOrNull()
         }
 
-        length++ // I almost forgot to add this part
     }
 
     fun eat(growAmount: Int) {
@@ -142,10 +142,10 @@ class GameMap(width: Int, height: Int) {
     val growAmount = 1
     private val board: Array<Array<BoardPiece>> = Array(width) { Array(height) { BoardPiece.EMPTY } }
     val dimensions: Pair<Int, Int> = Pair(width, height)
-    private val snake: Snake = Snake()
+    private val snake: Snake = Snake(Pair(dimensions.first / 2, dimensions.second / 2))
 
     init { // forgot we need an initial apple
-        updateBoard() // first update to get the board set up
+        //updateBoard() // first update to get the board set up
         spawnApple()
     }
 
@@ -172,7 +172,7 @@ class GameMap(width: Int, height: Int) {
 
         val pieceToCheck: BoardPiece = board[headLocationX][headLocationY]
 
-        return pieceToCheck.isSnake // does it hit itself
+        return pieceToCheck.isTail || pieceToCheck.isEnd // does it hit itself
     }
 
     private fun didHeadEat(): Boolean =
@@ -181,9 +181,8 @@ class GameMap(width: Int, height: Int) {
     fun getScore(): Int = snake.length // it will be minimum of 2 but that's what I want
 
     fun updateBoard(): Boolean { // if it's false, game is over
-        val snakeTail = snake.getTail()
-
         snake.move()
+        val snakeTail = snake.getTail()
 
         // checking the collisions
         if (didHeadCrash()) {
@@ -208,7 +207,9 @@ class GameMap(width: Int, height: Int) {
         for (piece in snakeTail) {
             board[piece.first][piece.second] = BoardPiece.TAIL
         }
-        board[snakeTail[snakeTail.lastIndex].first][snakeTail[snakeTail.lastIndex].second] = BoardPiece.END
+        if (snakeTail.isNotEmpty()) {
+            board[snakeTail[snakeTail.lastIndex].first][snakeTail[snakeTail.lastIndex].second] = BoardPiece.END
+        }
 
         // hopefully everything worked
         return true
@@ -223,19 +224,16 @@ class GameMap(width: Int, height: Int) {
     fun getDrawableBoard(): Array<String> {
         val arrayLength =
             dimensions.first * dimensions.second + (dimensions.second - 1) // must include newline character for every row EXCEPT the last
+        var arrayLocation = 0
         val drawableArray: Array<String> = Array(arrayLength) { " " }
-        for (i in 0..<dimensions.second) { // at the end of each row (except last), put a newline
-            drawableArray[i * dimensions.first] = "\n"
-        }
 
         // fill in the array with the correct characters
         for (j in 0..<dimensions.second) { // for each row
-            var arrayLocation = 0
             for (i in 0..<dimensions.first) { // for each character in the row
                 val pieceAtLocation = board[i][j]
                 if (pieceAtLocation != BoardPiece.EMPTY) { // empty was how the drawable was filled
                     drawableArray[arrayLocation] = when (pieceAtLocation) {
-                        BoardPiece.HEAD -> "⬤"
+                        BoardPiece.HEAD -> "@"
                         BoardPiece.TAIL -> "#"
                         BoardPiece.END -> "+"
                         BoardPiece.APPLE -> "ẟ"
@@ -243,7 +241,10 @@ class GameMap(width: Int, height: Int) {
                 }
                 arrayLocation++ // gotta increment each time
             }
-            arrayLocation++ // increment an extra time at the end of each row to skip newline
+            if (j < dimensions.second - 1) { // insert newlines
+                drawableArray[arrayLocation] = "\n"
+                arrayLocation++
+            }
         }
 
         return drawableArray

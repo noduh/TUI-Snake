@@ -1,19 +1,39 @@
 package dev.noduh.snake
 
+import com.varabyte.kotter.foundation.input.Keys
+import com.varabyte.kotter.foundation.input.onKeyPressed
 import com.varabyte.kotter.foundation.session
+import com.varabyte.kotter.foundation.text.text
 import com.varabyte.kotter.foundation.text.textLine
+import com.varabyte.kotter.foundation.timer.addTimer
+import kotlin.time.Duration.Companion.milliseconds
 
 fun main() {
+    val updateDelay = 300.milliseconds
     session {
+        val terminalWidth = terminalSize.width
+        val terminalHeight = terminalSize.height
+        val gameMap = GameMap(terminalWidth, terminalHeight)
+        var queuedDirection: Direction = Direction.EAST
+
         section {
-            val terminalWidth = terminalSize.width
-            val terminalHeight = terminalSize.height
-            val gameMap = GameMap(terminalWidth, terminalHeight)
-
-
-            textLine("your terminal is ${terminalWidth}x${terminalHeight}")
+            for (symbol in gameMap.getDrawableBoard()) { // draw the whole board
+                text(symbol)
+            }
         }.run {
-
+            addTimer(updateDelay, repeat = true) { // main game loop
+                repeat = gameMap.updateBoard(queuedDirection) // ends when the game ends
+                rerender()
+            }
+            onKeyPressed {
+                queuedDirection = when (key) {
+                    Keys.Up -> Direction.NORTH
+                    Keys.Right -> Direction.EAST
+                    Keys.Down -> Direction.SOUTH
+                    Keys.Left -> Direction.WEST
+                    else -> queuedDirection // don't wanna change direction if we didn't press a key to
+                }
+            }
         }
     }
 }
@@ -124,6 +144,11 @@ class GameMap(width: Int, height: Int) {
     val dimensions: Pair<Int, Int> = Pair(width, height)
     private val snake: Snake = Snake()
 
+    init { // forgot we need an initial apple
+        updateBoard() // first update to get the board set up
+        spawnApple()
+    }
+
     private fun spawnApple() {
         val maxX: Int = dimensions.first - 1
         val maxY: Int = dimensions.second - 1
@@ -220,7 +245,7 @@ class GameMap(width: Int, height: Int) {
             }
             arrayLocation++ // increment an extra time at the end of each row to skip newline
         }
-        
+
         return drawableArray
     }
 }

@@ -8,6 +8,8 @@ fun main() {
         section {
             val terminalWidth = terminalSize.width
             val terminalHeight = terminalSize.height
+            val gameMap = GameMap(terminalWidth, terminalHeight)
+
 
             textLine("your terminal is ${terminalWidth}x${terminalHeight}")
         }.run {
@@ -192,8 +194,33 @@ class GameMap(width: Int, height: Int) {
 
         return updateBoard()
     }
-}
 
-class Game() {
-    //
+    fun getDrawableBoard(): Array<String> {
+        val arrayLength =
+            dimensions.first * dimensions.second + (dimensions.second - 1) // must include newline character for every row EXCEPT the last
+        val drawableArray: Array<String> = Array(arrayLength) { " " }
+        for (i in 0..<dimensions.second) { // at the end of each row (except last), put a newline
+            drawableArray[i * dimensions.first] = "\n"
+        }
+
+        // fill in the array with the correct characters
+        for (j in 0..<dimensions.second) { // for each row
+            var arrayLocation = 0
+            for (i in 0..<dimensions.first) { // for each character in the row
+                val pieceAtLocation = board[i][j]
+                if (pieceAtLocation != BoardPiece.EMPTY) { // empty was how the drawable was filled
+                    drawableArray[arrayLocation] = when (pieceAtLocation) {
+                        BoardPiece.HEAD -> "⬤"
+                        BoardPiece.TAIL -> "#"
+                        BoardPiece.END -> "+"
+                        BoardPiece.APPLE -> "🍎"
+                    }
+                }
+                arrayLocation++ // gotta increment each time
+            }
+            arrayLocation++ // increment an extra time at the end of each row to skip newline
+        }
+        
+        return drawableArray
+    }
 }

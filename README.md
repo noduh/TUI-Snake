@@ -19,15 +19,17 @@ I also really wanted this to be fun, so I picked a game that I personally enjoy 
 Snake is such a simple, and yet challenging game.
 I figured it's perfect for learning a new language.
 
+This project took a lot of time because I not only had to design game logic, but I also had to figure out how to use kotter. I admittedly spent a lot of time talking to Gemini. *Especially* when it came to debugging. (I really should've started debugging *before* finishing the entire game.)
+
 <!-- 4-5 minute youtube video demo. focus on what was learned about the language syntax -->
 
 <!-- [Software Demo Video](http://youtube.link.goes.here) -->
 
 # Development Environment
 
-<!-- tools used: -->
+I used VSCode, ZSH, Git, GitHub, and I eventually switched to using Ghostty for my terminal. Also, there was a lot of chatting with Google's Gemini. I used it at the end of the first working version to try some solutions to broken code. Eventually it worked.
 
-<!-- programming language and any libraries -->
+This was programmed in Kotlin. The main library I used was [kotter](https://github.com/varabyte/kotter) by [verabyte](https://github.com/varabyte). I also used a built-in library for time control.
 
 # Useful Websites
 
@@ -41,4 +43,6 @@ Here are some websites that were useful to me in the development of this project
 
 Some future fixes or potential improvements I would like to make are:
 
-<!-- add some things in this list -->
+- Add characters from *Symbols for Legacy Computing*
+- Add a menu
+- Add score tracker

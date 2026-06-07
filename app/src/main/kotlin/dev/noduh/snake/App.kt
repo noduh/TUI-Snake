@@ -213,7 +213,7 @@ class GameMap(width: Int, height: Int) {
                         BoardPiece.HEAD -> "⬤"
                         BoardPiece.TAIL -> "#"
                         BoardPiece.END -> "+"
-                        BoardPiece.APPLE -> "🍎"
+                        BoardPiece.APPLE -> "ẟ"
                     }
                 }
                 arrayLocation++ // gotta increment each time
